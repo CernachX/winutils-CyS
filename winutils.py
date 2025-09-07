@@ -99,12 +99,18 @@ def decode_webhook(encoded_url):
     decoded_url = decoded_bytes.decode('utf-8')
     return decoded_url
 
-def send_webhook(webhook,message):
-    """Func that takes a base64 encoded webhook (webhook) and a message (message) to send as args, decodes, and sends to hook
+def send_webhook(webhook,message,file_path=None):
+    """Func that takes a base64 encoded webhook (webhook), message (message), and or a file path (file_path) to send as args, decodes, and sends to hook
     try/exc designed to write to a txt if sending fails to maintain logging"""
     webhook = SyncWebhook.from_url(decode_webhook(webhook)) 
     try: 
-        webhook.send(message)
+        #if file_path arg is true, reads and sends
+        if file_path:
+            with open(file_path,'rb') as f:
+                webhook.send(message,file=File(f,filename=file_path))
+        #else sends message arg
+        else:
+            webhook.send(message)
     except Exception:
         if not os.path.exists("log.txt"):
             with open("log.txt", "w") as log_file:
